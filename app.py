@@ -8,10 +8,14 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="*")  # ← Fix this line!
 
-@app.route("/summary", methods=["POST"])
+@app.route("/summary", methods=["POST", "OPTIONS"])
 def generate_summary():
+    if request.method == "OPTIONS":
+        # This is the CORS preflight request
+        return '', 204
+
     data = request.json
     messages = data.get("messages", "")
     print("🔍 Incoming messages:", messages)
@@ -40,10 +44,10 @@ Respond only with the formatted DAR note in markdown.
         return jsonify({ "dar": dar })
 
     except Exception as e:
-        print("❌ OpenAI API error:", str(e))  # 💥 This will show us the exact issue
+        print("❌ OpenAI API error:", str(e))
         return jsonify({ "error": str(e) }), 500
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # ← grab PORT from env or default to 5000
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
