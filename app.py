@@ -14,14 +14,28 @@ CORS(app)
 def generate_summary():
     data = request.json
     messages = data.get("messages", "")
+    format_type = data.get("format", "DAR").upper()  # Default to DAR if missing
+    print(f"🔍 Incoming format: {format_type}")
     print("🔍 Incoming messages:", messages)
 
-    prompt = f"""You're a medical AI trained to generate DAR format nursing notes.
-Given this conversation between a nurse and patient, generate a detailed DAR note:
+    # Choose the format-specific instruction
+    format_prompts = {
+        "DAR": "Generate a detailed DAR (Data, Action, Response) nursing note in markdown format.",
+        "SOAP": "Generate a detailed SOAP (Subjective, Objective, Assessment, Plan) nursing note in markdown format.",
+        "BIRP": "Generate a detailed BIRP (Behavior, Intervention, Response, Plan) nursing note in markdown format."
+    }
 
+    if format_type not in format_prompts:
+        return jsonify({ "error": f"Unsupported format: {format_type}" }), 400
+
+    prompt = f"""
+You are a medical AI assistant trained in nursing documentation.
+{format_prompts[format_type]}
+
+Conversation between nurse and patient:
 {messages}
 
-Respond only with the formatted DAR note in markdown.
+Respond only with the formatted {format_type} note in markdown.
 """
 
     try:
@@ -35,13 +49,14 @@ Respond only with the formatted DAR note in markdown.
             temperature=0.3,
             max_tokens=1000
         )
-        dar = response.choices[0].message.content
+        note = response.choices[0].message.content
         print("✅ Received response.")
-        return jsonify({ "dar": dar })
+        return jsonify({ "note": note, "format": format_type })
 
     except Exception as e:
-        print("❌ OpenAI API error:", str(e))  # 💥 This will show us the exact issue
+        print("❌ OpenAI API error:", str(e))
         return jsonify({ "error": str(e) }), 500
+
 
 
 if __name__ == "__main__":
