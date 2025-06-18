@@ -23,9 +23,9 @@ def generate_summary():
 
     # Format instructions
     format_prompts = {
-        "DAR": "Generate a detailed DAR (Data, Action, Response) nursing note in markdown format.",
-        "SOAP": "Generate a detailed SOAP (Subjective, Objective, Assessment, Plan) nursing note in markdown format.",
-        "BIRP": "Generate a detailed BIRP (Behavior, Intervention, Response, Plan) nursing note in markdown format."
+        "DAR": "Generate a detailed DAR (Data, Action, Response) nursing note in markdown format without adding any additional information not stated in the conversation.",
+        "SOAP": "Generate a detailed SOAP (Subjective, Objective, Assessment, Plan) nursing note in markdown format without adding any additional information not stated in the conversation.",
+        "BIRP": "Generate a detailed BIRP (Behavior, Intervention, Response, Plan) nursing note in markdown format without adding any additional information not stated in the conversation."
     }
     if format_type not in format_prompts:
         return jsonify({ "error": f"Unsupported format: {format_type}" }), 400
